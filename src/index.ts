@@ -3,26 +3,29 @@ import prompt from 'prompt-sync';
 import PenLogger from "./util/logger";
 import PenNameToSocialMediaHandleTransform
   from "./lib/pen/transform/impl/nameToSocialMediaHandle";
-import PenSocialMediaHandleToPicture
-  from "./lib/pen/transform/impl/socialMediaHandleToPicture";
+import { geocodeSearch } from "./lib/pen/utils/geocode";
+import { PenCoordinates } from "./lib/pen/person";
+import PenNameAndHomeAddressToGoogleResults
+  from "./lib/pen/transform/impl/nameAndHomeAddressToGoogleResults";
+// import PenSocialMediaHandleToPicture from "./lib/pen/transform/impl/socialMediaHandleToPicture";
 
 const p = prompt({ sigint: true });
 
 console.log(TITLE);
 
-const person = {
-  name: p('Name: '),
-  surname: p('Surname: '),
-};
+(async () => {
+  const person = {
+    name: p('Name: '),
+    surname: p('Surname: '),
+    homeAddress: (await geocodeSearch(p('Home adress: '))) as PenCoordinates
+  };
 
-const socialMediaHandleTransform = new PenNameToSocialMediaHandleTransform();
-const socialMediaHandleToPictureTransform = new PenSocialMediaHandleToPicture();
+  await new PenNameAndHomeAddressToGoogleResults().transform(person);
 
-const persons = socialMediaHandleTransform.transform(person);
+  const socialMediaHandleTransform = new PenNameToSocialMediaHandleTransform();
 
-persons.forEach(async (p) => {
-  const personWithPicture = await socialMediaHandleToPictureTransform.transform(p);
-  PenLogger.instance.info(`Hello ${personWithPicture.flatMap((p) => p.pictures).join(", ")}!`);
-});
+  const persons = socialMediaHandleTransform.transform(person);
 
-PenLogger.instance.info(`Hello ${persons.map((p) => p.socialMediaHandle).join(", ")}!`);
+
+  PenLogger.instance.info(`Hello ${persons.map((p) => p.socialMediaHandle).join(", ")}!`);
+})();
