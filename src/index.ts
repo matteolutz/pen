@@ -7,7 +7,10 @@ import { geocodeSearch } from "./lib/pen/utils/geocode";
 import { PenCoordinates } from "./lib/pen/person";
 import PenNameAndHomeAddressToGoogleResults
   from "./lib/pen/transform/impl/nameAndHomeAddressToGoogleResults";
-// import PenSocialMediaHandleToPicture from "./lib/pen/transform/impl/socialMediaHandleToPicture";
+
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const p = prompt({ sigint: true });
 
@@ -17,7 +20,7 @@ console.log(TITLE);
   const person = {
     name: p('Name: '),
     surname: p('Surname: '),
-    homeAddress: (await geocodeSearch(p('Home adress: '))) as PenCoordinates
+    homeAddress: (await geocodeSearch(p('Home address: '))) as PenCoordinates
   };
 
   await new PenNameAndHomeAddressToGoogleResults().transform(person);
