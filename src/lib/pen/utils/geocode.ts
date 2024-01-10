@@ -10,8 +10,11 @@ export type NominatimGeocodeSearchResult = {
 export type NominationReverseGeocodeSearchResult = {
   address: {
     town: string;
+    village: string;
     country_code: string;
   };
+  display_name: string;
+  boundingbox: [string, string, string, string];
 };
 
 export const geocodeSearch = async (

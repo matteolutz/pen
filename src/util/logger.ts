@@ -99,6 +99,10 @@ class PenLogger<Sub = string> {
     console.log(...args);
   }
 
+  public dir(...args: any[]): void {
+    console.dir(...args);
+  }
+
   public sub<S2 = string>(sub: S2): PenLogger<S2> {
     return new PenLogger(sub);
   }

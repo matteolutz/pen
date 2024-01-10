@@ -1,12 +1,29 @@
-import { NominationReverseGeocodeSearchResult } from './utils/geocode';
+import {
+  NominationReverseGeocodeSearchResult
+} from "./utils/geocode";
 
 export type PenCoordinates = {
   lat: string;
   lon: string;
 };
 
+export enum PenAddressPrecisionLevel {
+  COUNTRY = 0,
+  CITY = 1,
+  STREET = 2,
+  HOUSE = 3
+}
+
+const PenAddressPrecisionLevelDisplay: Record<PenAddressPrecisionLevel, string> = {
+  [PenAddressPrecisionLevel.COUNTRY]: "Country",
+  [PenAddressPrecisionLevel.CITY]: "City",
+  [PenAddressPrecisionLevel.STREET]: "Street",
+  [PenAddressPrecisionLevel.HOUSE]: "House"
+};
+
 export type PenAddress = PenCoordinates & {
   reverseLookup: NominationReverseGeocodeSearchResult;
+  precisionLevel: PenAddressPrecisionLevel;
 };
 
 type PenPerson = {
@@ -14,14 +31,26 @@ type PenPerson = {
   surname: string;
   age: number;
   socialMediaHandle: string;
-  email: string;
-  phone: string;
+  email: Array<string>;
+  phone: Array<string>;
   articles: Array<string>;
-  pictures: Array<string>;
+  images: Array<string>;
   homeAddress: PenAddress;
 };
 
 export default PenPerson;
+
+export const prettyPrintPerson = (person: Partial<PenPerson>): string => {
+  const address = person.homeAddress
+    ? `${person.homeAddress.reverseLookup.display_name} (${PenAddressPrecisionLevelDisplay[person.homeAddress.precisionLevel]})`
+    : "N/A";
+
+  return `Name: ${person.name} ${person.surname}\nAge: ${person.age}\nSocial Media: ${person.socialMediaHandle}\nEmail: ${person.email?.join(
+    ", "
+  )}\nPhone: ${person.phone?.join(", ")}\nAddress: ${address}\n\nArticles: ${person.articles?.join(
+    ", "
+  )}\n\nPictures: ${person.images?.join(", ")}`;
+};
 
 export const comparePersonKey = (
   person1: Partial<PenPerson>,
@@ -32,11 +61,11 @@ export const comparePersonKey = (
     return false;
   }
 
-  if (key === 'homeAddress') {
+  if (key === "homeAddress") {
     return (
       person1[key]?.lat === person2[key]?.lat &&
       person1[key]?.lon === person2[key]?.lon
-    );
+    ) || person1[key]!.precisionLevel !== person2[key]!.precisionLevel;
   }
 
   return person1[key] === person2[key];
@@ -47,13 +76,11 @@ export const findPerson = (
   personToFind: Partial<PenPerson>
 ): number => {
   const significantKeys = [
-    'name',
-    'surname',
-    'age',
-    'socialMediaHandle',
-    'email',
-    'phone',
-    'homeAddress'
+    "name",
+    "surname",
+    "age",
+    "socialMediaHandle",
+    "homeAddress"
   ];
 
   for (const [idx, person] of persons.entries()) {
@@ -76,16 +103,36 @@ export const findPerson = (
 export const mergePerson = (
   person1: Partial<PenPerson>,
   person2: Partial<PenPerson>
-): Partial<PenPerson> => ({
-  ...person1,
-  ...person2,
-  articles: [
-    ...new Set([...(person1.articles ?? []), ...(person2.articles ?? [])])
-  ],
-  pictures: [
-    ...new Set([...(person1.pictures ?? []), ...(person2.pictures ?? [])])
-  ]
-});
+): Partial<PenPerson> => {
+
+  let homeAddress;
+  if (person1['homeAddress'] && person2['homeAddress']) {
+    if (person1['homeAddress'].precisionLevel > person2['homeAddress'].precisionLevel) {
+      homeAddress = person1['homeAddress'];
+    } else {
+      homeAddress = person2['homeAddress'];
+    }
+  }
+
+  return {
+    ...person1,
+    ...person2,
+    homeAddress,
+    email: [
+      ...new Set([...(person1.email ?? []), ...(person2.email ?? [])])
+    ],
+    phone: [
+      ...new Set([...(person1.phone ?? []), ...(person2.phone ?? [])])
+    ],
+    articles: [
+      ...new Set([...(person1.articles ?? []), ...(person2.articles ?? [])])
+    ],
+    images: [
+      ...new Set([...(person1.images ?? []), ...(person2.images ?? [])])
+    ]
+  };
+};
+
 
 export const mergePersons = (
   persons: Array<Partial<PenPerson>>

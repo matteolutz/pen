@@ -5,14 +5,14 @@ import Transform from '../index';
 
 class PenSocialMediaHandleToPicture<
   A extends Partial<PenPerson>
-> extends Transform<'socialMediaHandle', 'pictures', A> {
+> extends Transform<'socialMediaHandle', 'images', A> {
   public constructor() {
     super('SocialMediaHandleToPicture');
   }
 
   protected async _transform(
     input: A & Pick<PenPerson, 'socialMediaHandle'>
-  ): Promise<Array<A & Pick<PenPerson, 'socialMediaHandle' | 'pictures'>>> {
+  ): Promise<Array<A & Pick<PenPerson, 'socialMediaHandle' | 'images'>>> {
     // region Instagram
     const response = await axios.get(
       `https://www.instagram.com/${input.socialMediaHandle}/?__a=1`

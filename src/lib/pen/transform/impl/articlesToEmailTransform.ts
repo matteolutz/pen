@@ -65,9 +65,8 @@ class PenArticlesToEmailTransform<
     Array<Pick<PenPerson, PenArticlesToEmailTransformInputKeys | 'email'> & A>
   > {
     // scrape every article and find an email address
-    return (
-      await Promise.all(
-        input.articles.map(async (a) => {
+      const emails = await Promise.all(
+        input.articles.map<Promise<Array<string>>>(async (a) => {
           let response;
           try {
             response = await axios.get(a);
@@ -90,20 +89,18 @@ class PenArticlesToEmailTransform<
             const emails = response.data.match(emailRegex);
             if (emails) {
               return emails
-                .filter(this._filterEmail.bind(this, input))
-                .map((e: string) => ({
-                  ...input,
-                  email: e
-                }));
+                .filter(this._filterEmail.bind(this, input));
             }
           }
 
           return [];
         })
-      )
-    ).flatMap((el) => el) as Array<
-      Pick<PenPerson, PenArticlesToEmailTransformInputKeys | 'email'> & A
-    >;
+      );
+
+      return [{
+        ...input,
+        email: [...new Set(input.email), ...new Set(emails.flat())]
+      }]
   }
 }
 
