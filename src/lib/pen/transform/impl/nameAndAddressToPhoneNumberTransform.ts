@@ -3,6 +3,7 @@ import * as jsdom from 'jsdom';
 
 import PenPerson from '../../person';
 import PenTransform from '../index';
+import { getPercentageOfMatchingWords } from "../../utils/string";
 
 export type NameAndAddressToPhoneNumberTransformInputKeys =
   | 'name'
@@ -41,6 +42,7 @@ class PenNameAndAddressToPhoneNumberTransform<
       const entries = dom.window.document.querySelectorAll('#hitwrap .hit');
       phoneNumbers.push(
         ...Array.from(entries)
+          .filter((entry) => getPercentageOfMatchingWords(entry.querySelector(".hitlnk_name")?.textContent ?? "", `${input.name} ${input.surname}`) > 0.9)
           .map(
             (entry) =>
               entry

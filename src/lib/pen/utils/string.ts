@@ -1,6 +1,6 @@
 export const getPercentageOfMatchingWords = (a: string, b: string): number => {
-  const wordsA = a.split(' ');
-  const wordsB = b.split(' ');
+  const wordsA = a.toLowerCase().trim().split(' ');
+  const wordsB = b.toLowerCase().trim().split(' ');
 
   const matchingWords = wordsA.filter((w) => wordsB.includes(w));
 

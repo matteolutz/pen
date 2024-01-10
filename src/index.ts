@@ -70,6 +70,6 @@ console.log(TITLE);
       `Search completed in ${Date.now() - searchStartTime}ms`
     );
   } catch (e) {
-    PenLogger.instance.error('Search failed');
+    PenLogger.instance.error('Search failed: ' + e);
   }
 })();
